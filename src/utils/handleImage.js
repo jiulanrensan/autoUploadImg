@@ -30,11 +30,11 @@ export async function downloadImg (url) {
 /**
  * @param {object} param0
  * @param {Blob} param0.source
- * @param {string} param0.imgUrl 
+ * @param {string} param0.imgName 
  * @returns { { succ: boolean, desc: string | undefined, imgUrl: string } }
  */
-export async function uploadImg ({ source, imgUrl }) {
-  const res = await privateUpload.uploadImg({ source, imgUrl })
+export async function uploadImg ({ source, imgName }) {
+  const res = await privateUpload.uploadImg({ source, imgName })
   if (!res) {
     // 提示消息
     return {

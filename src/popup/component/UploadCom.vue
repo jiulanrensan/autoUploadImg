@@ -120,7 +120,7 @@ export default {
       console.log('imgHash', imgHash);
       if (!source) return
       this.infoMessage('图片上传中')
-      const { succ, desc, imgUrl } = await uploadImg({ source, imgUrl: imgHash })
+      const { succ, desc, imgUrl } = await uploadImg({ source, imgName: imgHash })
       // this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl: '' })
       if (succ) {
         this.infoMessage('上传成功')
