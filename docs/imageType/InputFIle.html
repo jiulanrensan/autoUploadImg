@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    img{
+      width: 50vw;
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="input" accept="image/png,image/jpeg,image/jfif,image/gif">
+  <div>
+    <!-- <img src="" alt="" id="origin"> -->
+    <img src="" alt="" id="compress">
+  </div>
+  </script>
+  <script src="./fileType.js"></script>
+  <script>
+    const input = document.getElementById('input')
+    // const origin = document.getElementById('origin')
+    const compress = document.getElementById('compress')
+    let compressor = null
+    input.addEventListener('change', async (ev) => {
+      // console.log(ev.target.files[0])
+      // fileType2(ev.target.files[0])
+      try {
+        const res = await getImageType.isMatchedType(ev.target.files[0], ['jpg', 'jpeg', 'png', 'gif'])
+        // const res = await getImageType.isGIF(ev.target.files[0])
+        console.log('res',res);
+      } catch (error) {
+        console.log('err',error);
+      }
+    })
+  </script>
+</body>
+</html>

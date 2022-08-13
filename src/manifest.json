@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+  "name": "autoUploadImg",
+  "version": "1.0.0",
+  "description": "蓝湖、CoDesign切图上传",
+  "icons": {
+    "16": "static/images/upload.png",
+    "48": "static/images/upload.png",
+    "128": "static/images/upload.png"
+  },
+  "browser_action": {
+    "default_icon": "static/images/upload.png",
+    "default_title": "autoUploadImg",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": true
+  },
+  "permissions": [
+    "http://*/*",
+    "https://*/*",
+    "storage",
+    "tabs",
+    "webRequest",
+    "webRequestBlocking",
+    "webNavigation"
+  ],
+  "web_accessible_resources": ["contentScripts.js"],
+  // 参考 https://github.com/dteare/wasm-csp
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}

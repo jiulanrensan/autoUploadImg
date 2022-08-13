@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    img{
+      width: 50vw;
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="input" accept="image/png,image/jpeg,image/jfif,image/gif">
+  <div>
+    <!-- <img src="" alt="" id="origin"> -->
+    <img src="" alt="" id="compress">
+  </div>
+  <script src="./pngquant.min.js"></script>
+  <script src="./imageCompress.js"></script>
+  <script>
+    const input = document.getElementById('input')
+    // const origin = document.getElementById('origin')
+    const compress = document.getElementById('compress')
+    let compressor = new ImageCompress()
+    input.addEventListener('change', async (ev) => {
+      // compressor = new ImageCompress(ev.target.files[0])
+      const blob = await compressor.compress(ev.target.files[0])
+      if (!blob) {
+        console.log('error');
+        return 
+      }
+      const { source, beforeCompressed, afterCompressed } = blob
+      console.log(beforeCompressed, afterCompressed);
+      const reader = new FileReader()
+      reader.readAsDataURL(source)
+      reader.onload = () => {
+        compress.src = reader.result
+      }
+
+      // console.log(ev.target.files[0])
+      // compressor = new ImageCompress(ev.target.files[0], {
+      //   quality: 0.5,
+      //   // 输出图片的类型，默认是同类型
+      //   // mimeType: 'image/jpeg',
+      //   mimeType: 'image/png',
+      //   isPNG: true,
+      //   before: (value) => {
+      //     console.log(`压缩前大小： ${value.size/1000}`);
+      //     console.log(`压缩前类型： ${value.type}`);
+      //   },
+      //   after: (value) => {
+      //     console.log(`压缩后大小： ${value.size/1000}`);
+      //     console.log(`压缩后类型： ${value.type}`);
+      //     const reader = new FileReader()
+      //     reader.readAsDataURL(value)
+      //     reader.onload = () => {
+      //       compress.src = reader.result
+      //     }
+      //   }
+      // })
+      // compressor.compress()
+    })
+  </script>
+</body>
+</html>

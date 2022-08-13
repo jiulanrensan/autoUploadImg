@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    img{
+      width: 50vw;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <input type="file" id="input" accept="image/png,image/jpeg,image/jfif,image/gif">
+    <div>
+      <img src="" alt="" id="compress">
+    </div>
+  </div>
+  <script type="module">
+    import imagequant from './imagequant.js';
+    import { init as squooshInit, optimise as squooshOptimise } from './squoosh_oxipng.js'
+    const module = await imagequant({ noInitialRun: true });
+    await squooshInit();
+
+    const input = document.getElementById('input')
+    const imgDom = document.getElementById('compress')
+    input.addEventListener('change', async (ev) => {
+      compress(ev.target.files[0])
+    })
+
+    async function loadImage(src) {
+      // Load image
+      const img = document.createElement('img');
+      img.src = src;
+      await new Promise((resolve) => (img.onload = (ev) => {
+        console.log('ev', ev);
+        resolve()
+      }));
+      // Make canvas same size as image
+      const canvas = document.createElement('canvas');
+      [canvas.width, canvas.height] = [img.width, img.height];
+      // Draw image onto canvas
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return ctx.getImageData(0, 0, img.width, img.height);
+    }
+
+    async function getImageDataFromBlob (blob) {
+      const src = URL.createObjectURL(blob)
+      const img = document.createElement('img');
+      img.src = src;
+      await new Promise((resolve) => (img.onload = (ev) => {
+        resolve()
+      }));
+      const canvas = document.createElement('canvas');
+      [canvas.width, canvas.height] = [img.width, img.height];
+      // Draw image onto canvas
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return ctx.getImageData(0, 0, img.width, img.height);
+    }
+
+    function quantizeCompress ({ imageData, maxNumberColors = 64, dithering = 1 }) {
+      console.time('imagequant');
+      
+      const rawImage = module.quantize(
+        image.data,
+        image.width,
+        image.height,
+        maxNumberColors,
+        dithering,
+      );
+      console.timeEnd('imagequant')
+      console.log('imagequant done');
+  
+      const imageData = new ImageData(
+        new Uint8ClampedArray(rawImage.buffer),
+        image.width,
+        image.height,
+      );
+      return imageData
+    }
+
+    async function oxiPngCompress ({ arrayBuffer, level = 3, interlace = true }) {
+      console.time('squoosh_oxipng');
+      const compressedArrayBuffer = await squooshOptimise(new Uint8Array(pngBuffer), 3, true).buffer
+      console.timeEnd('squoosh_oxipng');
+      console.log('squoosh_oxipng done');
+      return compressedArrayBuffer
+    }
+  
+    async function compress(blob) {
+      // const image = await loadImage('./aaa.png');
+      const image = await getImageDataFromBlob(blob);
+      const imageData = quantizeCompress({ imageData: image })
+  
+      const pngBlob = await canvasEncode(imageData, 'image/png')
+  
+      const pngBuffer = await pngBlob.arrayBuffer()
+      
+      const compressedArrayBuffer = await oxiPngCompress({ arrayBuffer: pngBuffer })
+
+      const compressedBlob = new Blob([compressedArrayBuffer], { type: 'image/png' })
+  
+      // console.log('compressedBlob', compressedBlob);
+  
+      const url = URL.createObjectURL(compressedBlob);
+
+      imgDom.src = url
+  
+      // const canvas = document.createElement('canvas');
+      // canvas.width = image.width;
+      // canvas.height = image.height;
+      // const ctx = canvas.getContext('2d');
+      // ctx.putImageData(imageData, 0, 0);
+      // document.body.appendChild(canvas);
+    }
+  
+    async function canvasEncode(
+      data,
+      type,
+      quality,
+    ) {
+      const canvas = document.createElement('canvas');
+      canvas.width = data.width;
+      canvas.height = data.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw Error('Canvas not initialized');
+      ctx.putImageData(data, 0, 0);
+  
+      let blob = await new Promise((r) =>
+          canvas.toBlob(r, type, quality),
+        )
+  
+      if (!blob) throw Error('Encoding failed');
+      return blob;
+    }
+  </script>
+</body>
+</html>
