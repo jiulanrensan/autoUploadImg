@@ -18,6 +18,9 @@ export default {
     SettingCom,
     UploadCom
   },
+  destroyed () {
+    
+  },
   data () {
     return {
       currentTabIdx: '0'

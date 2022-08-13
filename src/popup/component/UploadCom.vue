@@ -41,6 +41,7 @@ import imageCompress from '../../utils/imageCompress'
 import { uploadImg } from '../../utils/handleImage'
 import { getCompressStatus } from '../message'
 import uploadImgStore from '../../store/uploadImgStore'
+import { genFileMd5 } from '../../utils/getFileMd5'
 import { Message } from 'element-ui';
 export default {
   name: "UploadCom",
@@ -87,6 +88,8 @@ export default {
     async compressFunc (file) {
       // console.log('file', file);
       const arrayBuffer = await this.fileToArrayBufferAsync(file)
+      // 生成图片md5值
+      const md5 = genFileMd5(arrayBuffer)
       // arrayBuffer => blob
       const blob = new Blob([new Uint8Array(arrayBuffer)])
       // console.log('compressSwitch', this.compressSwitch);
@@ -99,7 +102,10 @@ export default {
       try {
         this.infoMessage('图片压缩中')
         const result = await imageCompress.compress(blob)
-        return result
+        return {
+          ...result,
+          imgHash: md5
+        }
       } catch (error) {
         this.failMessage(error.toString())
         return {}
@@ -109,11 +115,12 @@ export default {
       // console.log('event', event);
       this.processing = true
       const {
-        source, beforeCompressed = {}, afterCompressed = {}, compressDuration = 0
+        source, beforeCompressed = {}, afterCompressed = {}, compressDuration = 0, imgHash = ''
       } = await this.compressFunc(event.file)
+      console.log('imgHash', imgHash);
       if (!source) return
       this.infoMessage('图片上传中')
-      const { succ, desc, imgUrl } = await uploadImg({ source, imgUrl: event.file.name })
+      const { succ, desc, imgUrl } = await uploadImg({ source, imgUrl: imgHash })
       // this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl: '' })
       if (succ) {
         this.infoMessage('上传成功')
