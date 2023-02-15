@@ -20,7 +20,11 @@ class UploadImgStore {
   storeImg (imgInfo) {
     // 队头在右边，队尾在左边
     const list = this.getImgList()
-    if (list.length === 10) {
+    const fileName = imgInfo.fileName
+    const fileIndex = (list || []).findIndex(item => item.fileName === fileName)
+    if (fileIndex > -1) {
+      list.splice(fileIndex, 1)
+    } else if (list.length === 10) {
       list.pop()
     }
     list.unshift(imgInfo)

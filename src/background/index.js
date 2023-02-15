@@ -190,12 +190,14 @@ async function getImageFromBlocking (details) {
       })
       return
     }
+    // 读取配置 是否开启上传确认
+    const isUpload = false
     sendProcessInfo({
       tabId,
-      message: '上传中...'
+      message: isUpload ? '上传中...' : '已添加到任务队列'
     })
     const { source, beforeCompressed, afterCompressed, compressDuration } = result
-    const { succ, desc, imgUrl } = await uploadImg({ source, imgUrl: url })
+    const { succ, desc, imgUrl } = await uploadImg({ source, imgUrl: url, isUpload })
   
     // sendSuccInfo({
     //   tabId,

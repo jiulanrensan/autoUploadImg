@@ -3,6 +3,8 @@ const COMPRESS_IS_CLOSED = false
 const COMPRESS_IS_OPENED = true
 const COMPRESS_RATIO_ONE = '1'
 const COMPRESS_RATIO_TWO = '2'
+// 是否自动上传
+const AUTO_IS_UPLOAD = false
 
 // 一倍图对应原尺寸的一半，二倍图对应原尺寸
 const COMPRESS_RATIO_MAP = {
@@ -13,6 +15,7 @@ const COMPRESS_RATIO_MAP = {
 class CompressConfig {
   constructor () {
     this.compressSwitch = COMPRESS_IS_OPENED
+    this.autoUploadSwitch = AUTO_IS_UPLOAD
     this.compressRatio = COMPRESS_RATIO_MAP[COMPRESS_RATIO_TWO]
     this.compressQuality = 0
     this.compressing = false
@@ -24,6 +27,13 @@ class CompressConfig {
   changeCompressSwitch (bool) {
     this.compressSwitch = bool
     // console.log('this.compressSwitch', this.compressSwitch);
+  }
+  /**
+   * 
+   * @param {boolean} bool 
+   */
+  changeAutoUploadSwitch (bool) {
+    this.autoUploadSwitch = bool
   }
   /**
    * 
@@ -56,9 +66,10 @@ class CompressConfig {
    * @returns { { compressSwitch: boolean, compressing: boolean, compressRatio: '1' | '2', compressQuality: 0 | 1 | 2 } }
    */
   getCompressConfigFromPopup () {
-    const { compressSwitch, compressing, compressRatio, compressQuality } = this
+    const { compressSwitch, autoUploadSwitch, compressing, compressRatio, compressQuality } = this
     return { 
       compressSwitch, 
+      autoUploadSwitch,
       compressing,
       compressRatio: ({ '0.5': '1', '1': '2' })[compressRatio],
       compressQuality: compressQuality

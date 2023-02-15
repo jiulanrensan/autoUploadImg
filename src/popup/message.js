@@ -23,6 +23,10 @@ export function getCompressStatus () {
 export function changeCompressSwitch (bool) {
   getCompressConfigFn().changeCompressSwitch(bool)
 }
+
+export function changeAutoUploadSwitch (bool) {
+  getCompressConfigFn().changeAutoUploadSwitch(bool)
+}
 /**
  * 
  * @param {string} val '1' | '2'

@@ -5,6 +5,11 @@
       <el-switch v-model="compressSwitch" :disabled="configDisabled" @change="changeSwitch">
       </el-switch>
     </div>
+    <div class="popup_switch">
+      <p>自动上传：</p>
+      <el-switch v-model="autoUploadSwitch" @change="changeUploadSwitch">
+      </el-switch>
+    </div>
     <div class="popup_ratio">
       <p>选择一倍图或二倍图（只用于拦截图片下载时设置）</p>
       <el-radio :disabled="compressIsClosed || configDisabled" v-model="compressRatio" label="1" @change="changeRatio">一倍图</el-radio>
@@ -17,7 +22,7 @@
   </section>
 </template>
 <script>
-import { getCompressStatus, changeCompressSwitch, changeCompressRatio, changeCompressQuality } from '../message'
+import { getCompressStatus, changeCompressSwitch, changeAutoUploadSwitch, changeCompressRatio, changeCompressQuality } from '../message'
 export default {
   name: 'SettingCom',
   data () {
@@ -26,7 +31,8 @@ export default {
       compressRatio: '2',
       compressQuality: 0,
       configDisabled: false,
-      compressIsClosed: false
+      compressIsClosed: false,
+      autoUploadSwitch: false
     }
   },
   created () {
@@ -46,6 +52,14 @@ export default {
       this.compressIsClosed = !val
       changeCompressSwitch(val)
       this.$EventBus.$emit('changeSwitch', val)
+    },
+    /**
+     * 切换自动上传状态开关
+     */
+    changeUploadSwitch (val) {
+      console.log('autoUploadSwitch', val);
+      changeAutoUploadSwitch(val)
+      this.$EventBus.$emit('autoUploadChangeSwitch', val)
     },
     changeRatio (val) {
       console.log('changeRatio', val);
