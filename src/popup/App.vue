@@ -37,6 +37,6 @@ export default {
 .app{
   padding: 5px 20px 20px;
   transition: all 0.6s;
-  width: 360px;
+  width: 366px;
 }
 </style>

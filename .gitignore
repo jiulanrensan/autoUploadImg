@@ -2,3 +2,4 @@ node_modules/
 dist/
 src/utils/privateUpload.js
 src/utils/privateCosUpload.js
+chrome.zip

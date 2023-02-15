@@ -33,18 +33,26 @@ export async function downloadImg (url) {
  * @param {string} param0.imgName 
  * @returns { { succ: boolean, desc: string | undefined, imgUrl: string } }
  */
-export async function uploadImg ({ source, imgName }) {
-  const res = await privateUpload.uploadImg({ source, imgName })
-  if (!res) {
+export async function uploadImg ({ source, imgName, isUpload }) {
+  const res = await privateUpload.uploadImg({ source, imgName, isUpload })
+  if (res && res.isUpload) {
     // 提示消息
     return {
-      succ: false,
-      desc: res
+      succ: res.isUpload && res.fileUrl,
+      desc: res.fileUrl,
+      filename: imgName,
+      source: source,
+      fileUrl: res.fileUrl,
+      isUpload: true,
+      imgUrl: res.fileUrl
     }
   }
-  // console.log('uploadImg', res);
   return {
-    succ: true,
-    imgUrl: res
+    succ: false,
+    filename: imgName,
+    source: source,
+    fileUrl: res.fileUrl,
+    isUpload: false,
+    imgUrl: URL.createObjectURL(source)
   }
 }

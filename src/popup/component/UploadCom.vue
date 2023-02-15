@@ -29,6 +29,11 @@
             <div>压缩后: {{item.afterCompressed.size}}kb / {{item.afterCompressed.type}}</div>
             <div>压缩时长: {{item.compressDuration}}ms</div>
             <el-button type="text" @click="copyLink(item.imgUrl)">复制链接</el-button>
+            <div>
+              <el-button size="mini" type="warning" @click="previewOrigin(item)">原图</el-button>
+              <el-button size="mini" type="success" @click="preview(item)">上传前预览</el-button>
+              <el-button size="mini" type="danger" @click="handleClickUpload(item)">{{ item.isUpload ? '重新上传' : '上传' }}</el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -42,15 +47,21 @@ import { uploadImg } from '../../utils/handleImage'
 import { getCompressStatus } from '../message'
 import uploadImgStore from '../../store/uploadImgStore'
 import { genFileMd5 } from '../../utils/getFileMd5'
-import { Message } from 'element-ui';
+import { Message } from 'element-ui'
+import { getFileSuffix } from '../../utils/file'
+
 export default {
   name: "UploadCom",
   data () {
     return {
       uploadTipText: '',
       compressSwitch: true,
+      // 是否开启自动上传
+      autoUploadSwitch: false,
       processing: false, // 处理中：压缩+上传
-      historyList: []
+      historyList: [],
+      // 文件名对应的source
+      sourceMap: []
     }
   },
   created () {
@@ -72,6 +83,9 @@ export default {
       this.compressSwitch = compressSwitch
       this.$EventBus.$on('changeSwitch', (bool) => {
         this.compressSwitch = bool
+      })
+      this.$EventBus.$on('autoUploadChangeSwitch', (bool) => {
+        this.autoUploadSwitch = bool
       })
     },
     fileToArrayBufferAsync (file) {
@@ -96,7 +110,8 @@ export default {
       if (!this.compressSwitch) {
         // 不压缩
         return {
-          source: blob
+          source: blob,
+          imgHash: md5
         }
       }
       try {
@@ -114,19 +129,36 @@ export default {
     async customUploadFunc (event) {
       // console.log('event', event);
       this.processing = true
-      const {
+      let {
         source, beforeCompressed = {}, afterCompressed = {}, compressDuration = 0, imgHash = ''
       } = await this.compressFunc(event.file)
-      console.log('imgHash', imgHash);
+      imgHash += '.' + getFileSuffix(event.file.name)
+      console.log('imgHash', imgHash)
       if (!source) return
-      this.infoMessage('图片上传中')
-      const { succ, desc, imgUrl } = await uploadImg({ source, imgName: imgHash })
-      // this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl: '' })
-      if (succ) {
-        this.infoMessage('上传成功')
-        this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl })
+      // 读取配置 是否上传
+      const isUpload = this.autoUploadSwitch
+      isUpload && this.infoMessage('图片上传中')
+      const { succ, desc, imgUrl, filename } = await uploadImg({ source, imgName: imgHash, isUpload })
+      this.sourceMap.push({
+        filename,
+        source,
+        beforeCompressed,
+        afterCompressed,
+        compressDuration,
+        imgHash,
+        sourceFile: URL.createObjectURL(event.file)
+      })
+      // 如果没有开启自动上传
+      if (!isUpload) {
+        this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl, isUpload, filename })
       } else {
-        this.failMessage(`上传失败：${desc}`)
+        // this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl: '' })
+        if (succ) {
+          this.infoMessage('上传成功')
+          this.refreshHistoryList({ beforeCompressed, afterCompressed, compressDuration, imgUrl, isUpload })
+        } else {
+          this.failMessage(`上传失败：${desc}`)
+        }
       }
       this.processing = false
     },
@@ -160,6 +192,46 @@ export default {
         console.log("Fail to copy: ", error);
       }
     },
+    /**
+     * 点击手动上传
+     * @param {Object} item 
+     */
+    async handleClickUpload(item) {
+      const fileName = item.filename
+      const objSource = this.sourceMap.find(map => map.filename === fileName)
+      if (objSource && objSource.source) {
+        this.infoMessage('图片上传中')
+        const { succ, desc, imgUrl } = await uploadImg({ source: objSource.source, imgName: fileName, isUpload: true })
+        if (succ) {
+          this.infoMessage('上传成功')
+          this.refreshHistoryList({ ...objSource, imgUrl, isUpload: true })
+        } else {
+          this.failMessage(`上传失败：${desc}`)
+        }
+      } else {
+        this.infoMessage('图片已失效')
+      }
+    },
+    /**
+     * 压缩后图片预览按钮
+     * @param {Object} item 
+     */
+    preview(item) {
+      window.open(item.imgUrl, "_blank")
+    },
+    /**
+     * 预览原图
+     * @param {Object} item 
+     */
+    previewOrigin(item) {
+      const fileName = item.filename;
+      const objSource = this.sourceMap.find(map => map.filename === fileName);
+      if (!objSource || !objSource.sourceFile) {
+        this.infoMessage('图片已失效')
+        return
+      }
+      window.open( objSource.sourceFile, "_blank")
+    }
   }
 };
 </script>
@@ -200,11 +272,11 @@ export default {
 }
 .history-item-info{
   font-size: 12px;
-  margin-left: 30px;
+  margin-left: 10px;
 }
 .history-item img{
   width: 100px;
   height: 100px;
-  object-fit: cover;
+  object-fit: contain;
 }
 </style>
